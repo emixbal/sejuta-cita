@@ -11,11 +11,12 @@ import (
 
 type User struct {
 	gorm.Model
-	Name     string `json:"name"`
-	IsAdmin  bool   `json:"is_admin,omitempty" gorm:"default:false"`
-	IsActive bool   `json:"is_active,omitempty" gorm:"default:true"`
-	Email    string `json:"email" gorm:"index:idx_name,unique"`
+	Name     string `json:"Name"`
+	IsActive bool   `json:"IsActive,omitempty" gorm:"default:true"`
+	Email    string `json:"Email" gorm:"index:idx_email,unique"`
 	Password string `json:"-"`
+	RoleID   int    `json:"RoleID"`
+	Role     Role   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 func FethAllUsers(limit, offset int) (Response, error) {

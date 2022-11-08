@@ -52,11 +52,11 @@ func CheckLogin(email, passwordTxt string) (isExist bool, isMatch bool, tokenStr
 	}
 
 	claims := jwt.MapClaims{
-		"email":    email,
-		"user_id":  user.ID,
-		"is_admin": user.IsAdmin,
-		"exp":      time.Now().Add(time.Minute * 15).Unix(),
-		"iat":      time.Now().Unix(),
+		"email":   email,
+		"user_id": user.ID,
+		// "role": user.IsAdmin,
+		"exp": time.Now().Add(time.Minute * 15).Unix(),
+		"iat": time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

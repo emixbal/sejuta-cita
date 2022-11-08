@@ -10,9 +10,9 @@ import (
 
 type Book struct {
 	gorm.Model
-	Author string `json:"author"`
-	Name   string `json:"name"`
-	NoISBN string `json:"no_isbn"`
+	Author string `json:"Author"`
+	Name   string `json:"Name"`
+	NoISBN string `json:"NoISBN"`
 }
 
 func FethAllBooks() (Response, error) {

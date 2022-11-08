@@ -45,9 +45,9 @@ func UserLogin(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(fiber.Map{
 		"token": tokenString,
 		"user": fiber.Map{
-			"id":       user.ID,
-			"email":    user.Email,
-			"is_admin": user.IsAdmin,
+			"id":    user.ID,
+			"email": user.Email,
+			// "is_admin": user.IsAdmin,
 		},
 	})
 }

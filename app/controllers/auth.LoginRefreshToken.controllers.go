@@ -53,16 +53,16 @@ func LoginRefrehToken(c *fiber.Ctx) error {
 	userClaim.Issuer = utils.UUIDv4()
 	userClaim.Id = int(u.ID)
 	userClaim.Email = u.Email
-	userClaim.IsAdmin = u.IsAdmin
+	// userClaim.IsAdmin = u.IsAdmin
 	accessToken, refreshToken := models.GenerateTokens(&userClaim, false)
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 		"user": fiber.Map{
-			"id":       u.ID,
-			"email":    u.Email,
-			"is_admin": u.IsAdmin,
+			"id":    u.ID,
+			"email": u.Email,
+			// "is_admin": u.IsAdmin,
 		},
 	})
 }
