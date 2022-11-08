@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sejuta-cita/app/models"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
@@ -17,15 +18,15 @@ var (
 )
 
 func IsAuthenticated(c *fiber.Ctx) error {
+	var response models.Response
 	raw_token := c.Request().Header.Peek("Authorization")
 	tokenString := string(raw_token)
 
 	if tokenString == "" {
-		return c.Status(http.StatusUnauthorized).JSON(
-			map[string]string{
-				"message": "Unauthorized, need access token to access this API route!",
-			},
-		)
+		response.Status = http.StatusForbidden
+		response.Message = "Unauthorized, need access token to access this API route!"
+
+		return c.Status(response.Status).JSON(response)
 	}
 
 	claims := jwt.MapClaims{}
@@ -34,11 +35,11 @@ func IsAuthenticated(c *fiber.Ctx) error {
 	})
 	if err != nil {
 		fmt.Println(err)
-		return c.Status(http.StatusUnauthorized).JSON(
-			map[string]string{
-				"message": "Unauthorized, access token is invalid!",
-			},
-		)
+
+		response.Status = http.StatusUnauthorized
+		response.Message = "Unauthorized, access token is expired!"
+
+		return c.Status(response.Status).JSON(response)
 	}
 
 	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
@@ -72,22 +73,20 @@ func IsAuthenticated(c *fiber.Ctx) error {
 		return c.Next()
 	}
 
-	return c.Status(http.StatusUnauthorized).JSON(
-		map[string]string{
-			"message": "Unauthorized, access token is invalid!",
-		},
-	)
+	response.Status = http.StatusUnauthorized
+	response.Message = "Unauthorized, access token is invalid!"
+
+	return c.Status(response.Status).JSON(response)
 }
 
 func IsAdmin(c *fiber.Ctx) error {
+	var response models.Response
 	if c.Locals("is_admin") == true {
 		return c.Next()
 	}
 
-	return c.Status(http.StatusUnauthorized).JSON(
-		map[string]string{
-			"message": "Unauthorized to access this menu",
-		},
-	)
+	response.Status = http.StatusUnauthorized
+	response.Message = "Unauthorized, access token is expired!"
 
+	return c.Status(response.Status).JSON(response)
 }

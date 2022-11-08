@@ -40,7 +40,7 @@ func GenerateAccessClaims(userClaim *UserClaim, issuer string) string {
 		"email":   userClaim.Email,
 		"user_id": userClaim.Id,
 		"role":    userClaim.Role,
-		"exp":     time.Now().Add(time.Minute * 15).Unix(),
+		"exp":     time.Now().Add(time.Second * 30).Unix(),
 		"iat":     time.Now().Unix(),
 	}
 
