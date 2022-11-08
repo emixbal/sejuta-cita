@@ -9,10 +9,10 @@ import (
 )
 
 type UserClaim struct {
-	Issuer  string
-	Id      int
-	Email   string
-	IsAdmin bool
+	Issuer string
+	Id     int
+	Email  string
+	Role   string
 }
 
 var (
@@ -36,12 +36,12 @@ func GenerateTokens(userClaim *UserClaim, isDoRefresh bool) (string, string) {
 // GenerateAccessClaims returns a claim and a acess_token string
 func GenerateAccessClaims(userClaim *UserClaim, issuer string) string {
 	claim := &jwt.MapClaims{
-		"issuer":   issuer,
-		"email":    userClaim.Email,
-		"user_id":  userClaim.Id,
-		"is_admin": userClaim.IsAdmin,
-		"exp":      time.Now().Add(time.Minute * 15).Unix(),
-		"iat":      time.Now().Unix(),
+		"issuer":  issuer,
+		"email":   userClaim.Email,
+		"user_id": userClaim.Id,
+		"role":    userClaim.Role,
+		"exp":     time.Now().Add(time.Minute * 15).Unix(),
+		"iat":     time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
@@ -56,12 +56,12 @@ func GenerateAccessClaims(userClaim *UserClaim, issuer string) string {
 // GenerateRefreshClaims returns refresh_token
 func GenerateRefreshClaims(userClaim *UserClaim, issuer string) string {
 	refreshClaim := &jwt.MapClaims{
-		"issuer":   issuer,
-		"email":    userClaim.Email,
-		"user_id":  userClaim.Id,
-		"is_admin": userClaim.IsAdmin,
-		"exp":      time.Now().Add(30 * 24 * time.Hour).Unix(),
-		"iat":      time.Now().Unix(),
+		"issuer":  issuer,
+		"email":   userClaim.Email,
+		"user_id": userClaim.Id,
+		"role":    userClaim.Role,
+		"exp":     time.Now().Add(30 * 24 * time.Hour).Unix(),
+		"iat":     time.Now().Unix(),
 	}
 
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaim)
