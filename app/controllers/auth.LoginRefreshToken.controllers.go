@@ -30,24 +30,24 @@ func LoginRefrehToken(c *fiber.Ctx) error {
 	v := validate.Struct(p)
 	if !v.Validate() {
 		return c.JSON(fiber.Map{
-			"message": v.Errors.One(),
+			"Message": v.Errors.One(),
 		})
 	}
 	user := new(models.User)
 
 	db := config.GetDBInstance()
 
-	if res := db.Where("email = ?", p.Email).Preload("Role").First(&user); res.RowsAffected <= 0 {
+	if res := db.Where("Email = ?", p.Email).Preload("Role").First(&user); res.RowsAffected <= 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   true,
-			"message": "Invalid Email!",
+			"Error":   true,
+			"Message": "Invalid Email!",
 		})
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(p.Password)); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   true,
-			"message": "Password is incorrect!",
+			"Error":   true,
+			"Message": "Password is incorrect!",
 		})
 	}
 	userClaim.Issuer = utils.UUIDv4()
@@ -57,12 +57,12 @@ func LoginRefrehToken(c *fiber.Ctx) error {
 	accessToken, refreshToken := models.GenerateTokens(&userClaim, false)
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
-		"user": fiber.Map{
-			"id":    user.ID,
-			"email": user.Email,
-			"role":  user.Role.Name,
+		"AccessToken":  accessToken,
+		"RefreshToken": refreshToken,
+		"User": fiber.Map{
+			"ID":    user.ID,
+			"Email": user.Email,
+			"Role":  user.Role.Name,
 		},
 	})
 }
@@ -82,14 +82,14 @@ func RefreshToken(c *fiber.Ctx) error {
 
 	if err != nil {
 		fmt.Println("the error from parse: ", err)
-		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"message": err})
+		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"Message": err})
 	}
 
 	//is token valid?
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
 		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
-			"message": "StatusUnauthorized",
+			"Message": "StatusUnauthorized",
 		})
 	}
 
@@ -104,7 +104,7 @@ func RefreshToken(c *fiber.Ctx) error {
 	accessToken, refreshToken := models.GenerateTokens(&userClaim, true)
 	if len(accessToken) < 1 || len(refreshToken) < 1 {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "something went wrong",
+			"Message": "something went wrong",
 		})
 	}
 
@@ -122,12 +122,12 @@ func RefreshToken(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
-		"user": fiber.Map{
-			"id":    userClaim.Id,
-			"email": userClaim.Email,
-			"role":  userClaim.Role,
+		"AccessToken":  accessToken,
+		"RefreshToken": refreshToken,
+		"User": fiber.Map{
+			"ID":    userClaim.Id,
+			"Email": userClaim.Email,
+			"Role":  userClaim.Role,
 		},
 	})
 }
