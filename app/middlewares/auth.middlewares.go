@@ -35,9 +35,17 @@ func IsAuthenticated(c *fiber.Ctx) error {
 	})
 	if err != nil {
 		fmt.Println(err)
+		if err.Error() == "Token is expired" {
+			fmt.Println(err)
 
-		response.Status = http.StatusUnauthorized
-		response.Message = "Unauthorized, access token is expired!"
+			response.Status = http.StatusUnauthorized
+			response.Message = err.Error()
+
+			return c.Status(response.Status).JSON(response)
+		}
+
+		response.Status = http.StatusForbidden
+		response.Message = err.Error()
 
 		return c.Status(response.Status).JSON(response)
 	}
@@ -86,7 +94,8 @@ func IsAdmin(c *fiber.Ctx) error {
 	}
 
 	response.Status = http.StatusUnauthorized
-	response.Message = "Unauthorized, access token is expired!"
+	response.Message = "Unauthorized to access this menu!"
 
 	return c.Status(response.Status).JSON(response)
+
 }
