@@ -1,16 +1,13 @@
 package controllers
 
 import (
-	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"sejuta-cita/app/models"
 	"sejuta-cita/app/requests"
 	"sejuta-cita/config"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/utils"
 	"github.com/golang-jwt/jwt"
@@ -69,6 +66,7 @@ func LoginRefrehToken(c *fiber.Ctx) error {
 
 func RefreshToken(c *fiber.Ctx) error {
 	var userClaim models.UserClaim
+	// var response models.Response
 
 	refreshToken := c.FormValue("refresh_token")
 
@@ -82,13 +80,13 @@ func RefreshToken(c *fiber.Ctx) error {
 
 	if err != nil {
 		fmt.Println("the error from parse: ", err)
-		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"Message": err})
+		return c.Status(http.StatusForbidden).JSON(fiber.Map{"Message": "Invalid token"})
 	}
 
 	//is token valid?
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
+		return c.Status(http.StatusForbidden).JSON(fiber.Map{
 			"Message": "StatusUnauthorized",
 		})
 	}
@@ -106,19 +104,6 @@ func RefreshToken(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"Message": "something went wrong",
 		})
-	}
-
-	// set token to blacklist in redis
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-	// rdb := config.GetDBInstanceRedis()
-	errrdb := rdb.Set(context.TODO(), userClaim.Issuer, userClaim.Id, 0).Err()
-	if errrdb != nil {
-		log.Println("====>redis err save blacklist token<===")
-		log.Println(errrdb)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
