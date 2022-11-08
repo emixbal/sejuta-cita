@@ -22,3 +22,21 @@ func (f LoginForm) Translates() map[string]string {
 		"Password": "password",
 	}
 }
+
+type RefreshTokenForm struct {
+	RefreshToken string `json:"refresh_token" xml:"refresh_token" form:"refresh_token" validate:"required"`
+}
+
+// Messages you can custom validator error messages.
+func (f RefreshTokenForm) Messages() map[string]string {
+	return validate.MS{
+		"required": "{field} is required.",
+	}
+}
+
+// Translates you can custom field translates.
+func (f RefreshTokenForm) Translates() map[string]string {
+	return validate.MS{
+		"RefreshToken": "refresh_token",
+	}
+}

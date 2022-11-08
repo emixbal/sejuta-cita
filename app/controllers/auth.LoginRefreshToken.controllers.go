@@ -68,9 +68,20 @@ func RefreshToken(c *fiber.Ctx) error {
 	var userClaim models.UserClaim
 	// var response models.Response
 
-	refreshToken := c.FormValue("refresh_token")
+	p := new(requests.RefreshTokenForm)
+	if err := c.BodyParser(p); err != nil {
+		return err
+	}
+	v := validate.Struct(p)
+	if !v.Validate() {
+		return c.JSON(fiber.Map{
+			"Message": v.Errors.One(),
+			"Error":   true,
+		})
+	}
+	// refreshToken := c.FormValue("refresh_token")
 
-	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(p.RefreshToken, func(token *jwt.Token) (interface{}, error) {
 		//Make sure that the token method conform to "SigningMethodHMAC"
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -80,13 +91,17 @@ func RefreshToken(c *fiber.Ctx) error {
 
 	if err != nil {
 		fmt.Println("the error from parse: ", err)
-		return c.Status(http.StatusForbidden).JSON(fiber.Map{"Message": "Invalid token"})
+		return c.Status(http.StatusForbidden).JSON(fiber.Map{
+			"Error":   true,
+			"Message": "Invalid token",
+		})
 	}
 
 	//is token valid?
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
 		return c.Status(http.StatusForbidden).JSON(fiber.Map{
+			"Error":   true,
 			"Message": "StatusUnauthorized",
 		})
 	}
@@ -102,11 +117,13 @@ func RefreshToken(c *fiber.Ctx) error {
 	accessToken, refreshToken := models.GenerateTokens(&userClaim, true)
 	if len(accessToken) < 1 || len(refreshToken) < 1 {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"Error":   true,
 			"Message": "something went wrong",
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"Error":        false,
 		"AccessToken":  accessToken,
 		"RefreshToken": refreshToken,
 		"User": fiber.Map{
